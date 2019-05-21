@@ -1,32 +1,22 @@
 <?php
 session_start();
+require 'config.php';
 
-if(isset($_POST['email']) && empty($_POST['email']) == false) {
+if(!empty($_POST['email'])) {
     $email = addslashes($_POST['email']);
-    $password = md5(addslashes($_POST['password']));
+    $password = md5($_POST['password']);
 
-    $dsn = "mysql:dbname=blog;host=localhost";
-    $dbuser = "root";
-    $dbpassword = "";
+    $sql = "SELECT id FROM users2 WHERE email = '$email' AND pass = '$password'";
+    $sql = $pdo->query($sql);
+    
+    if($sql->rowCount() > 0) {
+        $info = $sql->fetch();
 
-    try {
-        $db = new PDO($dsn, $dbuser, $dbpassword);
-
-        $sql = $db->query("SELECT * FROM users2 WHERE email = '$email' AND pass = '$password'");
-
-        if($sql->rowCount() > 0) {
-            $data = $sql->fetch(); //array
-            $_SESSION['id'] = $data['id']; //save id in the session
-            header("Location: index.php"); //redirect to index
-        } else {
-            // The user wrong the password
-        }
-
-    } catch(PDOexeption $e) {
-        echo "Failure: ".$e->getMessage();
+        $_SESSION['logado'] = $info['id'];
+        header("Location: index.php");
+        exit;
     }
-}
-
+}   
 ?>
 
 <html>
@@ -99,6 +89,8 @@ if(isset($_POST['email']) && empty($_POST['email']) == false) {
                 margin-top: -10px;
             }
             #buttons {
+                display: flex;
+                justify-content: space-between;
                 width: 310px;
                 margin-left: 25px
             }
@@ -125,11 +117,7 @@ if(isset($_POST['email']) && empty($_POST['email']) == false) {
                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00cde5ee', endColorstr='#c5ebf7',GradientType=0 ); /* IE6-9 */
                 cursor: pointer; 
             }  
-            #remember-password {
-                fonte: normal 12px sans-serif;
-                color: #555555;
-                font: bold;
-            }  
+            
         </style>
     </head>
     <body>
@@ -147,10 +135,8 @@ if(isset($_POST['email']) && empty($_POST['email']) == false) {
                     </div>
                 
                     <div id=buttons>
+                        <div><input type ="submit" value="Register" id="button" /></div>
                         <div><input type ="submit" value="Login" id="button" /></div>
-                        <div id=remember-password>
-                            <input type="checkbox" /> Remember password
-                        </div>
                     </div>
                 </form>
             </div>
